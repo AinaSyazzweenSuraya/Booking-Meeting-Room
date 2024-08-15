@@ -2,6 +2,7 @@ package com.bookingmeetingroom.service;
 
 import com.bookingmeetingroom.dto.MeetingRoomDetail;
 import com.bookingmeetingroom.dto.MeetingRoomPostRequest;
+import com.bookingmeetingroom.dto.MeetingRoomUpdateRequest;
 import com.bookingmeetingroom.entity.MeetingRoomEntity;
 import com.bookingmeetingroom.entity.UserEntity;
 import com.bookingmeetingroom.exceptions.ApplicationException;
@@ -107,5 +108,31 @@ public class MeetingRoomService {
         roomsDetail.setCapacity(room.getCapacity());
         roomsDetail.setIsOccupied(room.getIsOccupied());
         return roomsDetail;
+    }
+
+    public MeetingRoomEntity update(Long id, MeetingRoomUpdateRequest meetingRoomUpdateRequest, Long userId) {
+
+        Optional<UserEntity> userEntityOptional = userRepository.findById(userId);
+        if (userEntityOptional.isEmpty()) {
+            throw new ApplicationException("User not found");
+        }
+
+        UserEntity user = userEntityOptional.get();
+        if (!user.getType().equals("admin")) {
+            throw new ApplicationException("Only admins can update a meeting room");
+        }
+
+        // Find existing meeting room
+        MeetingRoomEntity meetingRoom = meetingRoomRepository.findById(id)
+                .orElseThrow(() -> new ApplicationException("Meeting room not found"));
+
+        // Update meeting room details
+        meetingRoom.setName(meetingRoomUpdateRequest.getName());
+        meetingRoom.setCapacity(meetingRoomUpdateRequest.getCapacity());
+        meetingRoom.setIsOccupied(meetingRoomUpdateRequest.getIsOccupied());
+        meetingRoom.setUpdatedBy(user.getType());
+        meetingRoom.setUpdatedAt(LocalDateTime.now());
+
+        return meetingRoomRepository.save(meetingRoom);
     }
 }
