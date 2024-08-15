@@ -2,10 +2,11 @@ package com.bookingmeetingroom.service;
 
 import com.bookingmeetingroom.dto.MeetingRoomDetail;
 import com.bookingmeetingroom.dto.MeetingRoomPostRequest;
-import com.bookingmeetingroom.dto.UsersDetail;
 import com.bookingmeetingroom.entity.MeetingRoomEntity;
 import com.bookingmeetingroom.entity.UserEntity;
+import com.bookingmeetingroom.exceptions.ApplicationException;
 import com.bookingmeetingroom.repository.MeetingRoomRepository;
+import com.bookingmeetingroom.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +24,10 @@ public class MeetingRoomService {
     @Autowired
     private MeetingRoomRepository meetingRoomRepository;
 
-    public MeetingRoomEntity add(MeetingRoomPostRequest meetingRoomPostRequests) {
+    @Autowired
+    private UserRepository userRepository;
+
+    /*public MeetingRoomEntity add(MeetingRoomPostRequest meetingRoomPostRequests) {
         MeetingRoomEntity meetingRooms = new MeetingRoomEntity();
         meetingRooms.setCreatedBy("admin");
         meetingRooms.setCreatedAt(LocalDateTime.now());
@@ -32,8 +36,29 @@ public class MeetingRoomService {
         meetingRooms.setIsOccupied(meetingRoomPostRequests.getIsOccupied());
 
         return meetingRoomRepository.save(meetingRooms);
-    }
+    }*/
 
+    public MeetingRoomEntity add(MeetingRoomPostRequest meetingRoomPostRequests) {
+        // get user from db
+        Optional<UserEntity> userEntityOptional = userRepository.findById(meetingRoomPostRequests.getUserId());
+        if(userEntityOptional.isEmpty()){
+            throw new ApplicationException("Only admins can add a meeting room");
+        }
+
+        UserEntity user = userEntityOptional.get();
+        if(!user.getType().equals("admin")){
+            throw new ApplicationException("Only admins can add a meeting room");
+        }
+
+        MeetingRoomEntity meetingRooms = new MeetingRoomEntity();
+        meetingRooms.setCreatedBy(user.getType());
+        meetingRooms.setCreatedAt(LocalDateTime.now());
+        meetingRooms.setName(meetingRoomPostRequests.getName());
+        meetingRooms.setCapacity(meetingRoomPostRequests.getCapacity());
+        meetingRooms.setIsOccupied(meetingRoomPostRequests.getIsOccupied());
+
+        return meetingRoomRepository.save(meetingRooms);
+    }
 
     public List<MeetingRoomDetail> fetchAll() {
         List<MeetingRoomEntity> allMeetingRooms = meetingRoomRepository.findAll();
@@ -45,6 +70,7 @@ public class MeetingRoomService {
                 .collect(Collectors.toList());
     }
 
+    /*
     public List<MeetingRoomDetail> fetchByCreatedBy(String name) {
         List<MeetingRoomEntity> meetingRoomByUser = meetingRoomRepository.findAll();
 
@@ -53,7 +79,7 @@ public class MeetingRoomService {
                         MeetingRoomEntity.getCapacity(),
                         MeetingRoomEntity.getIsOccupied()))
                 .collect(Collectors.toList());
-    }
+    }*/
 
     public List<MeetingRoomDetail> subset(String orderBy, String direction, int page) {
         Pageable pageable = PageRequest.of(page, 3, Sort.by(Sort.Direction.valueOf(direction.toUpperCase()), orderBy));
