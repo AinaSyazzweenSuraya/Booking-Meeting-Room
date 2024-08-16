@@ -1,10 +1,14 @@
 package com.bookingmeetingroom.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class MeetingRoomUpdateRequest {
 
+    @NotBlank(message = "name is required")
     private String name;
     private int capacity;
     private RoomStatus isOccupied;
+    Long userId;
 
     // Getters and Setters
     public String getName() {
@@ -29,5 +33,13 @@ public class MeetingRoomUpdateRequest {
 
     public void setIsOccupied(RoomStatus isOccupied) {
         this.isOccupied = isOccupied;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

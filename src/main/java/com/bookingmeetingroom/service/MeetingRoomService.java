@@ -28,17 +28,6 @@ public class MeetingRoomService {
     @Autowired
     private UserRepository userRepository;
 
-    /*public MeetingRoomEntity add(MeetingRoomPostRequest meetingRoomPostRequests) {
-        MeetingRoomEntity meetingRooms = new MeetingRoomEntity();
-        meetingRooms.setCreatedBy("admin");
-        meetingRooms.setCreatedAt(LocalDateTime.now());
-        meetingRooms.setName(meetingRoomPostRequests.getName());
-        meetingRooms.setCapacity(meetingRoomPostRequests.getCapacity());
-        meetingRooms.setIsOccupied(meetingRoomPostRequests.getIsOccupied());
-
-        return meetingRoomRepository.save(meetingRooms);
-    }*/
-
     public MeetingRoomEntity add(MeetingRoomPostRequest meetingRoomPostRequests) {
         // get user from db
         Optional<UserEntity> userEntityOptional = userRepository.findById(meetingRoomPostRequests.getUserId());
@@ -71,17 +60,6 @@ public class MeetingRoomService {
                 .collect(Collectors.toList());
     }
 
-    /*
-    public List<MeetingRoomDetail> fetchByCreatedBy(String name) {
-        List<MeetingRoomEntity> meetingRoomByUser = meetingRoomRepository.findAll();
-
-        return meetingRoomByUser.stream().
-                map(MeetingRoomEntity -> new MeetingRoomDetail(MeetingRoomEntity.getName(),
-                        MeetingRoomEntity.getCapacity(),
-                        MeetingRoomEntity.getIsOccupied()))
-                .collect(Collectors.toList());
-    }*/
-
     public List<MeetingRoomDetail> subset(String orderBy, String direction, int page) {
         Pageable pageable = PageRequest.of(page, 3, Sort.by(Sort.Direction.valueOf(direction.toUpperCase()), orderBy));
 
@@ -110,9 +88,9 @@ public class MeetingRoomService {
         return roomsDetail;
     }
 
-    public MeetingRoomEntity update(Long id, MeetingRoomUpdateRequest meetingRoomUpdateRequest, Long userId) {
+    public MeetingRoomEntity update(Long roomId, MeetingRoomUpdateRequest meetingRoomUpdateRequest) {
 
-        Optional<UserEntity> userEntityOptional = userRepository.findById(userId);
+        Optional<UserEntity> userEntityOptional = userRepository.findById(meetingRoomUpdateRequest.getUserId());
         if (userEntityOptional.isEmpty()) {
             throw new ApplicationException("User not found");
         }
@@ -123,7 +101,7 @@ public class MeetingRoomService {
         }
 
         // Find existing meeting room
-        MeetingRoomEntity meetingRoom = meetingRoomRepository.findById(id)
+        MeetingRoomEntity meetingRoom = meetingRoomRepository.findById(roomId)
                 .orElseThrow(() -> new ApplicationException("Meeting room not found"));
 
         // Update meeting room details
@@ -134,5 +112,21 @@ public class MeetingRoomService {
         meetingRoom.setUpdatedAt(LocalDateTime.now());
 
         return meetingRoomRepository.save(meetingRoom);
+    }
+
+    public void delete(Long roomId, Long userId) {
+        Optional<UserEntity> userEntityOptional = userRepository.findById(userId);
+        if(userEntityOptional.isEmpty()){
+            throw new ApplicationException("User not found");
+        }
+
+        UserEntity user= userEntityOptional.get();
+        if(!user.getType().equals("admin")){
+            throw new ApplicationException("Only admins can update a meeting room");
+        }
+
+        MeetingRoomEntity meetingRoom = meetingRoomRepository.findById(roomId).orElseThrow(() -> new ApplicationException("Meeting room not found"));
+
+        meetingRoomRepository.delete(meetingRoom);
     }
 }

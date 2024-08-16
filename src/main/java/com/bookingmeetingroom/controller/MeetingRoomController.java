@@ -27,7 +27,6 @@ public class MeetingRoomController {
     @PostMapping
     public MeetingRoomPostResponse createMeetingRooms(@Validated @RequestBody MeetingRoomPostRequest meetingRoomPostRequest) {
 
-        // Proceed with the creation of the meeting room
         MeetingRoomEntity insertedMeetingRoom = meetingRoomService.add(meetingRoomPostRequest);
         MeetingRoomPostResponse resp = new MeetingRoomPostResponse();
         resp.setMeetingRoom(insertedMeetingRoom);
@@ -56,18 +55,24 @@ public class MeetingRoomController {
     }
 
     //cara nk update
-    @PutMapping("/{id} ")
-    public MeetingRoomPostResponse updateMeetingRoom(@PathVariable Long id,
-                                                     @Validated @RequestBody MeetingRoomUpdateRequest meetingRoomUpdateRequest,
-                                                     @RequestParam Long userId) {
+    @PutMapping("/{roomId}")
+    public MeetingRoomPostResponse updateMeetingRoom(@PathVariable("roomId") Long roomId,
+                                                     @Validated @RequestBody MeetingRoomUpdateRequest meetingRoomUpdateRequest) {
 
-        MeetingRoomEntity updatedMeetingRoom = meetingRoomService.update(id, meetingRoomUpdateRequest, userId);
+        MeetingRoomEntity updatedMeetingRoom = meetingRoomService.update(roomId, meetingRoomUpdateRequest);
 
         MeetingRoomPostResponse resp = new MeetingRoomPostResponse();
         resp.setMeetingRoom(updatedMeetingRoom);
         resp.setMessage("Meeting room updated successfully");
 
         return resp;
+    }
+
+    @DeleteMapping("/{roomId}")
+    public ResponseEntity<Void> deleteMeetingRoom(@PathVariable("roomId") Long roomId, @RequestParam Long userId) {
+        meetingRoomService.delete(roomId, userId);
+
+        return ResponseEntity.noContent().build();
     }
 
 }
