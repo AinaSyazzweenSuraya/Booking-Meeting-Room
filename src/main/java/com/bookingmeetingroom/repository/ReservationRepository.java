@@ -9,4 +9,7 @@ import java.util.List;
 @Repository
 public interface ReservationRepository extends JpaRepository<ReservationEntity, Long> {
     List<ReservationEntity> findByUserId(Long userId);
+    List<ReservationEntity> findAll();
+    void deleteByUserId(Long userId);
+    boolean existsByUserId(Long userId);
 }

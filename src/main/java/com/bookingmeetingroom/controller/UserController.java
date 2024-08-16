@@ -18,7 +18,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/login")
+    /*@PostMapping("/login")
     public ResponseEntity<String> authenticateUser(@RequestBody LoginRequest loginRequest) {
         try {
             UserEntity user = userService.authenticateUser(loginRequest);
@@ -26,7 +26,7 @@ public class UserController {
         } catch (ApplicationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
-    }
+    }*/
 
     @PostMapping
     public UserPostResponse createUsers(@RequestBody UserPostRequest userPostRequest) {
@@ -54,18 +54,20 @@ public class UserController {
         return ResponseEntity.ok("User updated successfully");
     }
 
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(
-            @PathVariable Long userId,
+            @PathVariable Long id,
             @RequestParam Long requesterId) {
 
         try {
-            if (userService.isAdmin(requesterId) || requesterId.equals(userId)) {
-                userService.deleteUser(userId);
+            if (userService.isAdmin(requesterId) || requesterId.equals(id)) {
+                userService.deleteUser(id);
                 return ResponseEntity.ok("User deleted successfully");
             } else {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to delete this user");
             }
+        } catch (ApplicationException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing your request");

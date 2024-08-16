@@ -1,33 +1,30 @@
 package com.bookingmeetingroom.service;
 
 import com.bookingmeetingroom.dto.*;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.bookingmeetingroom.entity.UserEntity;
 import com.bookingmeetingroom.exceptions.ApplicationException;
+import com.bookingmeetingroom.repository.ReservationRepository;
 import com.bookingmeetingroom.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class UserService implements UserDetailsService {
+public class UserService{
 
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
+    private ReservationRepository reservationRepository;
 
     //login method
-    @Override
+    /*@Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -44,7 +41,7 @@ public class UserService implements UserDetailsService {
         }
 
         return user;
-    }
+    }*/
 
     //method add
     public UserEntity add(UserPostRequest userPostRequest) {
@@ -106,10 +103,17 @@ public class UserService implements UserDetailsService {
     }
 
     //method delete
+    @Transactional
     public void deleteUser(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new ApplicationException("User not found");
         }
+
+        if (reservationRepository.existsByUserId(userId)) {
+            throw new ApplicationException("User cannot be deleted because they have existing reservations");
+        }
+
+        reservationRepository.deleteByUserId(userId);
         userRepository.deleteById(userId);
     }
 }
