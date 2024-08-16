@@ -68,6 +68,7 @@ public class MeetingRoomController {
         return resp;
     }
 
+    //cara nak delete
     @DeleteMapping("/{roomId}")
     public ResponseEntity<Void> deleteMeetingRoom(@PathVariable("roomId") Long roomId, @RequestParam Long userId) {
         meetingRoomService.delete(roomId, userId);

@@ -2,6 +2,7 @@ package com.bookingmeetingroom.service;
 
 import com.bookingmeetingroom.dto.ReservationDetail;
 import com.bookingmeetingroom.dto.ReservationPostRequest;
+import com.bookingmeetingroom.dto.ReservationUpdateRequest;
 import com.bookingmeetingroom.dto.RoomStatus;
 import com.bookingmeetingroom.entity.MeetingRoomEntity;
 import com.bookingmeetingroom.entity.ReservationEntity;
@@ -75,8 +76,8 @@ public class ReservationService {
                 reservations = reservationRepository.findByUserId(userId);
             }
 
-            System.out.println("User Type: " + user.getType());
-            System.out.println("Number of Reservations: " + reservations.size());
+            /*System.out.println("User Type: " + user.getType());
+            System.out.println("Number of Reservations: " + reservations.size());*/
 
             return reservations.stream()
                     .map(this::convertToDetail)
@@ -88,22 +89,36 @@ public class ReservationService {
             reservationDetail.setId(reservationEntity.getId());
             reservationDetail.setStartDate(reservationEntity.getStartDate());
             reservationDetail.setEndDate(reservationEntity.getEndDate());
-            reservationDetail.setRoomName(reservationEntity.getMeetingRoom().getName());
-            reservationDetail.setUserName(reservationEntity.getUser().getUsername());
-
-            //handling case
-            if (reservationEntity.getMeetingRoom() != null) {
-                reservationDetail.setRoomName(reservationEntity.getMeetingRoom().getName());
-            } else {
-                reservationDetail.setRoomName("Room not found");
-            }
-
-            if (reservationEntity.getUser() != null) {
-                reservationDetail.setUserName(reservationEntity.getUser().getUsername());
-            } else {
-                reservationDetail.setUserName("User not found");
-            }
+            reservationDetail.setRoomName(reservationEntity.getMeetingRoom() != null ? reservationEntity.getMeetingRoom().getName() : "Room not found");
+            reservationDetail.setUserName(reservationEntity.getUser() != null ? reservationEntity.getUser().getUsername() : "User not found");
 
             return reservationDetail;
+        }
+
+        public ReservationEntity update(Long reservationId, ReservationUpdateRequest reservationUpdateRequest) {
+            ReservationEntity reservation = reservationRepository.findById(reservationId)
+                    .orElseThrow(() -> new ApplicationException("Reservation not found"));
+
+            // Check if the meeting room exists and is valid for update
+            MeetingRoomEntity room = meetingRoomRepository.findById(reservationUpdateRequest.getRoomId())
+                    .orElseThrow(() -> new ApplicationException("Meeting room not found"));
+
+            if (room.getIsOccupied() == RoomStatus.OCCUPIED) {
+                throw new ApplicationException("The meeting room is currently occupied");
+            }
+
+            // Update reservation details
+            if (reservation != null) {
+                reservation.setMeetingRoom(room);
+                reservation.setStartDate(reservationUpdateRequest.getStartDate());
+                reservation.setEndDate(reservationUpdateRequest.getEndDate());
+                reservation.setUpdatedAt(LocalDateTime.now());
+
+
+            return reservationRepository.save(reservation);
+        }
+            else{
+                throw new ApplicationException("Failed to update reservation");
+            }
         }
 }
