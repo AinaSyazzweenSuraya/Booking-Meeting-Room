@@ -78,9 +78,6 @@ public class UserService{
         if (userUpdateRequest.getPassword() != null) {
             user.setPassword(userUpdateRequest.getPassword());
         }
-        if (userUpdateRequest.getType() != null) {
-            user.setType(userUpdateRequest.getType());
-        }
 
         userRepository.save(user);
     }
@@ -96,24 +93,37 @@ public class UserService{
                 .collect(Collectors.toList());
     }
 
-    public boolean isAdmin(Long userId) {
-        UserEntity user = userRepository.findById(userId)
+    @Transactional
+    public void deleteUser(String username, String usernameToDelete) {
+
+        UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ApplicationException("User not found"));
-        return "admin".equals(user.getType());
+
+        //admin can delete all, user can only delete his own account
+        if ("admin".equals(user.getType())) {
+            deleteAccount(usernameToDelete);
+        } else if (username.equals(usernameToDelete)) {
+            deleteAccount(usernameToDelete);
+        } else {
+            throw new ApplicationException("Unauthorized to delete this account");
+        }
     }
 
-    //method delete
-    @Transactional
-    public void deleteUser(Long userId) {
-        if (!userRepository.existsById(userId)) {
+    private void deleteAccount(String usernameToDelete) {
+        if (!userRepository.existsByUsername(usernameToDelete)) {
             throw new ApplicationException("User not found");
         }
 
-        if (reservationRepository.existsByUserId(userId)) {
+        UserEntity userToDelete = userRepository.findByUsername(usernameToDelete)
+                .orElseThrow(() -> new ApplicationException("User not found"));
+
+        if (reservationRepository.existsByUserId(userToDelete.getId())) {
             throw new ApplicationException("User cannot be deleted because they have existing reservations");
         }
 
-        reservationRepository.deleteByUserId(userId);
-        userRepository.deleteById(userId);
+        reservationRepository.deleteByUserId(userToDelete.getId());
+        userRepository.deleteByUsername(usernameToDelete);
+
+        System.out.println("User " + usernameToDelete + " deleted successfully.");
     }
 }

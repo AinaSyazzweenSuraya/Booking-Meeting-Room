@@ -54,23 +54,11 @@ public class UserController {
         return ResponseEntity.ok("User updated successfully");
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteUser(
-            @PathVariable Long id,
-            @RequestParam Long requesterId) {
-
-        try {
-            if (userService.isAdmin(requesterId) || requesterId.equals(id)) {
-                userService.deleteUser(id);
-                return ResponseEntity.ok("User deleted successfully");
-            } else {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to delete this user");
-            }
-        } catch (ApplicationException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing your request");
-        }
+    @RequestMapping(value = "/{usernameToDelete}", method = RequestMethod.DELETE)
+    public ResponseEntity<Void> deleteUser(@PathVariable String usernameToDelete,
+                                           @RequestParam String username) {
+        userService.deleteUser(username, usernameToDelete);
+        return ResponseEntity.noContent().build();
     }
+
 }

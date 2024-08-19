@@ -11,6 +11,6 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
     List<UserEntity> findAll();
     Optional<UserEntity> findByUsername(String username);
-    void deleteByUserId(Long userId);
-    boolean existsByUserId(Long userId);
+    boolean existsByUsername(String usernameToDelete);
+    void deleteByUsername(String usernameToDelete);
 }
