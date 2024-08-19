@@ -97,7 +97,7 @@ public class UserService{
     public void deleteUser(String username, String usernameToDelete) {
 
         UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ApplicationException("User not found"));
+                .orElseThrow(() -> new ApplicationException("User not found 1"));
 
         //admin can delete all, user can only delete his own account
         if ("admin".equals(user.getType())) {
@@ -110,12 +110,9 @@ public class UserService{
     }
 
     private void deleteAccount(String usernameToDelete) {
-        if (!userRepository.existsByUsername(usernameToDelete)) {
-            throw new ApplicationException("User not found");
-        }
 
         UserEntity userToDelete = userRepository.findByUsername(usernameToDelete)
-                .orElseThrow(() -> new ApplicationException("User not found"));
+                .orElseThrow(() -> new ApplicationException("User not found 2"));
 
         if (reservationRepository.existsByUserId(userToDelete.getId())) {
             throw new ApplicationException("User cannot be deleted because they have existing reservations");

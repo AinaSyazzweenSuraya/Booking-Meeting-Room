@@ -38,7 +38,7 @@ public class UserController {
         return resp;
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public UsersDetail getUser(@PathVariable Long id){
         return userService.fetch(id);
     }
