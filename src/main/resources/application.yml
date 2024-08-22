@@ -8,13 +8,13 @@ logging:
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/bookingmeetingroom?createDatabaseIfNotExist=true
+    url: jdbc:mysql://localhost:3306/reservemeetingroom?createDatabaseIfNotExist=true
     username: root
     password: mysql"123
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
       dialect: org.hibernate.dialect.MySQL8Dialect
     open-in-view: false

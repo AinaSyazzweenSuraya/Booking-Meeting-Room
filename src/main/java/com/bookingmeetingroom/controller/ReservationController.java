@@ -54,11 +54,5 @@ public class ReservationController {
         return ResponseEntity.ok(response);
     }
 
-
-    /*@GetMapping("/subset")
-    public void subset(){
-
-    }*/
-
 }
 

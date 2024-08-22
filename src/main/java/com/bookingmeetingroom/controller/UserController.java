@@ -30,7 +30,6 @@ public class UserController {
 
     @PostMapping
     public UserPostResponse createUsers(@RequestBody UserPostRequest userPostRequest) {
-        //create/insert users
         UserEntity insertedUsers = userService.add(userPostRequest);
         UserPostResponse resp = new UserPostResponse();
         resp.setUsers(insertedUsers);
