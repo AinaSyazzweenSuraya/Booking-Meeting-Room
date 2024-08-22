@@ -35,14 +35,16 @@ public class ReservationService {
         //Add reservations
         public ReservationEntity add(ReservationPostRequest reservationRequest){
 
-            // Check if the meeting room exists and is unoccupied
+            // Check room id
             MeetingRoomEntity room = meetingRoomRepository.findById(reservationRequest.getRoomId())
                     .orElseThrow(() -> new ApplicationException("Meeting room not found"));
 
+            //check occupied or not
             if (room.getIsOccupied() == RoomStatus.OCCUPIED) {
                 throw new ApplicationException("The meeting room is already occupied");
             }
 
+            //check user id
             UserEntity user = userRepository.findById(reservationRequest.getUserId())
                     .orElseThrow(() -> new ApplicationException("User not found"));
 
@@ -54,6 +56,7 @@ public class ReservationService {
             reservation.setCreatedAt(LocalDateTime.now());
 
             ReservationEntity savedReservation = reservationRepository.save(reservation);
+
             room.setIsOccupied(RoomStatus.OCCUPIED);
             meetingRoomRepository.save(room);
 
