@@ -15,6 +15,6 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
       dialect: org.hibernate.dialect.MySQL8Dialect
     open-in-view: false

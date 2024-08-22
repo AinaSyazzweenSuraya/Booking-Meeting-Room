@@ -6,6 +6,7 @@ public class ReservationUpdateRequest {
     private Long roomId;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
+    private String status;
 
     // Getters and Setters
     public Long getRoomId() {
@@ -30,5 +31,13 @@ public class ReservationUpdateRequest {
 
     public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

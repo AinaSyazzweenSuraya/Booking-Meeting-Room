@@ -22,6 +22,7 @@ public class ReservationEntity {
 
     private LocalDateTime startDate;
     private LocalDateTime endDate;
+    private String status;
     private String createdBy;
     private LocalDateTime createdAt;
     private String updatedBy;
@@ -99,6 +100,14 @@ public class ReservationEntity {
         this.updatedAt = updatedAt;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         return "ReservationEntity{" +
@@ -107,6 +116,7 @@ public class ReservationEntity {
                 ", user=" + user +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
+                ", status='" + status + '\'' +
                 ", createdBy='" + createdBy + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedBy='" + updatedBy + '\'' +

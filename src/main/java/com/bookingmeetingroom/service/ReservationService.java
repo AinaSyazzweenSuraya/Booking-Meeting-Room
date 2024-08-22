@@ -11,6 +11,7 @@ import com.bookingmeetingroom.exceptions.ApplicationException;
 import com.bookingmeetingroom.repository.MeetingRoomRepository;
 import com.bookingmeetingroom.repository.ReservationRepository;
 import com.bookingmeetingroom.repository.UserRepository;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -79,9 +80,6 @@ public class ReservationService {
                 reservations = reservationRepository.findByUserId(userId);
             }
 
-            /*System.out.println("User Type: " + user.getType());
-            System.out.println("Number of Reservations: " + reservations.size());*/
-
             return reservations.stream()
                     .map(this::convertToDetail)
                     .collect(Collectors.toList());
@@ -124,4 +122,5 @@ public class ReservationService {
                 throw new ApplicationException("Failed to update reservation");
             }
         }
+
 }
