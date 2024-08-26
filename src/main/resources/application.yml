@@ -5,6 +5,7 @@ server:
 logging:
   level:
     org.springframework.web: DEBUG
+    org.hibernate.SQL: INFO
     com.djava.meetingRoom: DEBUG
 
 spring:
