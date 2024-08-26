@@ -17,3 +17,8 @@ spring:
       ddl-auto: update
     properties.hibernate:
       dialect: org.hibernate.dialect.MySQLDialect
+
+application:
+  jwt:
+    secret: MTQ5ZWY1ODY2NGMzYTdmMWI4OWI0N2ZlOGQ0ZDNiNzdjMDFlNDBkMzFiNWQyMzAxMjI3ZmI1YjQ2MmFmYzEyNmVlNzdiYmVhMmMyZmQyYTI2YzA1MTU4OTgwNzAzYzNkY2RmYTlmMzUwYzU3M2Y0OTQ2NGIyZTYzZTM1MTg5YTQ=
+    expirationMinutes: 86400000
