@@ -52,6 +52,8 @@ public class SecurityConfig {
                                         .requestMatchers("/api/auth/**").permitAll()
                                         // only admin can get all users
                                         .requestMatchers(HttpMethod.GET,"/api/users").hasAuthority(UserRole.ADMIN.name())
+                                        // only admin can create room
+                                        .requestMatchers(HttpMethod.POST,"/api/rooms").hasAuthority(UserRole.ADMIN.name())
                                         // only admin can update room
                                         .requestMatchers(HttpMethod.PUT,"/api/rooms").hasAuthority(UserRole.ADMIN.name())
                                         // only admin can delete room
