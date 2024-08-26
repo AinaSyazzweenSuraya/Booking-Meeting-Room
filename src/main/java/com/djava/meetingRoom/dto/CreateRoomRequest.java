@@ -11,7 +11,4 @@ public class CreateRoomRequest {
 
     @NotNull(message = "capacity is required")
     private Integer capacity;
-
-    @NotNull(message = "userId is required")
-    private Long userId;
 }

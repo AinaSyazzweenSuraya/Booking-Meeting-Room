@@ -19,6 +19,6 @@ public class Booking extends Audit {
     private Long roomId;
     private LocalDateTime start;
     private LocalDateTime end;
-    private Long bookedBy;
+    private String bookedBy;
     private String status;
 }

@@ -1,5 +1,5 @@
 package com.djava.meetingRoom.common;
 
-public enum UserType {
+public enum UserRole {
     ADMIN, USER
 }

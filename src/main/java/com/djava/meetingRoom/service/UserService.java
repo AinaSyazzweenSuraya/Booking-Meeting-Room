@@ -26,7 +26,7 @@ public class UserService {
         return users.stream().
                         map(user -> new UserResponse(user.getId(),
                         user.getUsername(),
-                        user.getType()))
+                        user.getRole()))
                 .collect(Collectors.toList());
     }
 
@@ -41,7 +41,7 @@ public class UserService {
         UserResponse response = new UserResponse();
         response.setId(user.getId());
         response.setUsername(user.getUsername());
-        response.setType(user.getType());
+        response.setType(user.getRole());
 
         return response;
     }

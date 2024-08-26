@@ -14,7 +14,4 @@ public class CreateBookingRequest {
 
     @NotBlank(message = "end is required")
     private String end;
-
-    @NotNull(message = "userId is required")
-    private Long userId;
 }

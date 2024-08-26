@@ -16,5 +16,5 @@ public class User extends Audit {
     private Long id;
     private String username;
     private String password;
-    private String type;
+    private String role;
 }

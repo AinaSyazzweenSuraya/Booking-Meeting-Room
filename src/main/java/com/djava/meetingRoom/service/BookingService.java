@@ -1,17 +1,16 @@
 package com.djava.meetingRoom.service;
 
 import com.djava.meetingRoom.common.BookingStatus;
-import com.djava.meetingRoom.common.UserType;
+import com.djava.meetingRoom.common.UserRole;
 import com.djava.meetingRoom.dto.ApproveBookingRequest;
-import com.djava.meetingRoom.dto.CreateBookingRequest;
 import com.djava.meetingRoom.dto.BookingResponse;
+import com.djava.meetingRoom.dto.CreateBookingRequest;
 import com.djava.meetingRoom.dto.UpdateBookingRequest;
 import com.djava.meetingRoom.entity.Booking;
 import com.djava.meetingRoom.entity.Room;
-import com.djava.meetingRoom.entity.User;
 import com.djava.meetingRoom.repository.BookingRepository;
 import com.djava.meetingRoom.repository.RoomRepository;
-import com.djava.meetingRoom.repository.UserRepository;
+import com.djava.meetingRoom.security.SecurityUtils;
 import com.djava.meetingRoom.service.error.ApplicationError;
 import com.djava.meetingRoom.service.error.ApplicationException;
 import lombok.extern.slf4j.Slf4j;
@@ -28,12 +27,10 @@ import java.util.stream.Collectors;
 public class BookingService {
 
     private final RoomRepository roomRepository;
-    private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
 
-    public BookingService(BookingRepository bookingRepository, UserRepository userRepository, RoomRepository roomRepository) {
+    public BookingService(BookingRepository bookingRepository, RoomRepository roomRepository) {
         this.bookingRepository = bookingRepository;
-        this.userRepository = userRepository;
         this.roomRepository = roomRepository;
     }
 
@@ -50,11 +47,13 @@ public class BookingService {
             throw new ApplicationException(ApplicationError.ROOM_IS_OCCUPIED);
         }
 
+        String username = SecurityUtils.currentLoggedInUsername();
+
         Booking booking = new Booking();
         booking.setRoomId(room.getId());
         booking.setStart(parseDate(request.getStart()));
         booking.setEnd(parseDate(request.getEnd()));
-        booking.setBookedBy(request.getUserId());
+        booking.setBookedBy(username);
         booking.setStatus(BookingStatus.PENDING_APPROVAL.name());
 
         booking = bookingRepository.save(booking);
@@ -118,8 +117,17 @@ public class BookingService {
         if(optional.isEmpty()){
             throw new ApplicationException(ApplicationError.BOOKING_NOT_FOUND);
         }
-
         Booking booking = optional.get();
+
+        String userRole = SecurityUtils.currentLoggedInUserRole();
+        if (userRole.equals(UserRole.USER.name())) {
+            String username = SecurityUtils.currentLoggedInUsername();
+
+            if (!username.equals(booking.getCreatedBy())) {
+                throw new ApplicationException(ApplicationError.FORBIDDEN_ACCESS);
+            }
+        }
+
         if (!Objects.equals(booking.getRoomId(), request.getRoomId())) {
             booking.setRoomId(request.getRoomId());
         }
@@ -146,8 +154,6 @@ public class BookingService {
     public BookingResponse approveBooking(Long id, ApproveBookingRequest request) {
         log.debug("Request to approve booking : {}", request);
 
-        checkIsAdmin(request.getUserId());
-
         Optional<Booking> optional = bookingRepository.findById(id);
         if(optional.isEmpty()){
             throw new ApplicationException(ApplicationError.BOOKING_NOT_FOUND);
@@ -171,17 +177,5 @@ public class BookingService {
         response.setStatus(booking.getStatus());
 
         return response;
-    }
-
-    private void checkIsAdmin(Long userId) {
-        Optional<User> optional = userRepository.findById(userId);
-        if (optional.isEmpty()) {
-            throw new ApplicationException(ApplicationError.USER_NOT_FOUND);
-        }
-
-        User user = optional.get();
-        if (!user.getType().equals(UserType.ADMIN.name())) {
-            throw new ApplicationException(ApplicationError.USER_IS_NOT_ADMIN);
-        }
     }
 }

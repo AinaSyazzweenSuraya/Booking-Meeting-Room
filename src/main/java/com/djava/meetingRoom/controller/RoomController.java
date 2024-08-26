@@ -2,7 +2,6 @@ package com.djava.meetingRoom.controller;
 
 import com.djava.meetingRoom.dto.RoomResponse;
 import com.djava.meetingRoom.dto.CreateRoomRequest;
-import com.djava.meetingRoom.dto.DeleteRoomRequest;
 import com.djava.meetingRoom.dto.UpdateRoomRequest;
 import com.djava.meetingRoom.service.RoomService;
 import jakarta.validation.Valid;
@@ -58,10 +57,10 @@ public class RoomController {
     }
 
     @DeleteMapping("/{id}")
-    public String deleteRoom(@PathVariable Long id, @Valid @RequestBody DeleteRoomRequest request) {
-        log.debug("REST request to delete room : {}", request);
+    public String deleteRoom(@PathVariable Long id) {
+        log.debug("REST request to delete room : {}", id);
 
-        return roomService.delete(id, request);
+        return roomService.delete(id);
     }
 
 }

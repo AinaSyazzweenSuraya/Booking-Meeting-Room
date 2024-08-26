@@ -14,6 +14,6 @@ public class BookingResponse {
     private Long roomId;
     private LocalDateTime start;
     private LocalDateTime end;
-    private Long bookedBy;
+    private String bookedBy;
     private String status;
 }

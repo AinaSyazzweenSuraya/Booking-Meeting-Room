@@ -7,7 +7,4 @@ import lombok.Data;
 public class ApproveBookingRequest {
     @NotNull(message = "roomId is required")
     private Long roomId;
-
-    @NotNull(message = "userId is required")
-    private Long userId;
 }
