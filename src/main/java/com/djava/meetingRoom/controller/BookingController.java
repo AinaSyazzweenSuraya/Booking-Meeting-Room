@@ -1,6 +1,5 @@
 package com.djava.meetingRoom.controller;
 
-import com.djava.meetingRoom.dto.ApproveBookingRequest;
 import com.djava.meetingRoom.dto.CreateBookingRequest;
 import com.djava.meetingRoom.dto.BookingResponse;
 import com.djava.meetingRoom.dto.UpdateBookingRequest;
@@ -57,9 +56,9 @@ public class BookingController {
     }
 
     @PutMapping("/approve/{id}")
-    public BookingResponse approveBooking(@PathVariable Long id, @Valid @RequestBody ApproveBookingRequest request) {
-        log.debug("REST request to approve booking : {}", request);
+    public BookingResponse approveBooking(@PathVariable Long id) {
+        log.debug("REST request to approve booking : {}", id);
 
-        return bookingService.approveBooking(id, request);
+        return bookingService.approveBooking(id);
     }
 }

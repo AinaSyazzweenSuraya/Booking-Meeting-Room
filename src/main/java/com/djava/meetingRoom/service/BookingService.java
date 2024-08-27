@@ -2,7 +2,6 @@ package com.djava.meetingRoom.service;
 
 import com.djava.meetingRoom.common.BookingStatus;
 import com.djava.meetingRoom.common.UserRole;
-import com.djava.meetingRoom.dto.ApproveBookingRequest;
 import com.djava.meetingRoom.dto.BookingResponse;
 import com.djava.meetingRoom.dto.CreateBookingRequest;
 import com.djava.meetingRoom.dto.UpdateBookingRequest;
@@ -151,21 +150,22 @@ public class BookingService {
         return response;
     }
 
-    public BookingResponse approveBooking(Long id, ApproveBookingRequest request) {
-        log.debug("Request to approve booking : {}", request);
+    public BookingResponse approveBooking(Long id) {
+        log.debug("Request to approve booking : {}", id);
 
-        Optional<Booking> optional = bookingRepository.findById(id);
-        if(optional.isEmpty()){
-            throw new ApplicationException(ApplicationError.BOOKING_NOT_FOUND);
-        }
-
-        Booking booking = optional.get();
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ApplicationException(ApplicationError.BOOKING_NOT_FOUND));
         if (booking.getStatus().equalsIgnoreCase(BookingStatus.APPROVED.name())) {
             throw new ApplicationException(ApplicationError.BOOKING_ALREADY_APPROVED);
         }
 
-        booking.setStatus(BookingStatus.APPROVED.name());
+        Room room = roomRepository.findById(booking.getRoomId())
+                .orElseThrow(() -> new ApplicationException(ApplicationError.ROOM_NOT_FOUND));
+        if (room.isOccupied()) {
+            throw new ApplicationException(ApplicationError.ROOM_IS_OCCUPIED);
+        }
 
+        booking.setStatus(BookingStatus.APPROVED.name());
         booking = bookingRepository.save(booking);
 
         BookingResponse response = new BookingResponse();

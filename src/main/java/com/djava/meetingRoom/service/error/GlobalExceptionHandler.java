@@ -44,8 +44,13 @@ public class GlobalExceptionHandler {
         log.error("Internal error: ", ex);
 
         ErrorResponse response = new ErrorResponse();
-        response.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        response.setMessage("Something went wrong somewhere. Please contact administrator");
+        if (ex instanceof ApplicationException applicationException) {
+            response.setCode(applicationException.getCode());
+            response.setMessage(applicationException.getMessage());
+        } else {
+            response.setCode(ApplicationError.INTERNAL_SERVER_ERROR.getCode());
+            response.setMessage(ApplicationError.INTERNAL_SERVER_ERROR.getMessage());
+        }
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(response);

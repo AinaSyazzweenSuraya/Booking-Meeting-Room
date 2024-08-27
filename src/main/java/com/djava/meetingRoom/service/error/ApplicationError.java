@@ -7,7 +7,7 @@ public enum ApplicationError {
     // General
     MISSING_AUTHORIZATION_HEADER(100, "Missing Authorization header"),
     INVALID_AUTHORIZATION_HEADER(101, "Invalid Authorization header"),
-    INTERNAL_SERVER_ERROR(102, "Internal server error"),
+    INTERNAL_SERVER_ERROR(102, "Something went wrong somewhere. Please try again later"),
     FORBIDDEN_ACCESS(103, "Forbidden access"),
 
     // User Errors 1000 - 2000

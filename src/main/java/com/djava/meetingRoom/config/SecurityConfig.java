@@ -59,7 +59,7 @@ public class SecurityConfig {
                                         // only admin can delete room
                                         .requestMatchers(HttpMethod.DELETE,"/api/rooms").hasAuthority(UserRole.ADMIN.name())
                                         // only admin can approve bookings
-                                        .requestMatchers(HttpMethod.PUT,"/api/bookings/approve/{id}").hasAuthority(UserRole.ADMIN.name())
+                                        .requestMatchers(HttpMethod.PUT,"/api/bookings/approve/**").hasAuthority(UserRole.ADMIN.name())
                                         .anyRequest()
                                         .authenticated()
                                       )
