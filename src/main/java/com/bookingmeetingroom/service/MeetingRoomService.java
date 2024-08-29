@@ -22,21 +22,26 @@ import java.util.stream.Collectors;
 @Service
 public class MeetingRoomService {
 
-    @Autowired
-    private MeetingRoomRepository meetingRoomRepository;
+    private final MeetingRoomRepository meetingRoomRepository;
+    private final UserRepository userRepository;
+    private final JsonPlaceholderClient jsonPlaceholderClient;
 
     @Autowired
-    private UserRepository userRepository;
+    public MeetingRoomService(MeetingRoomRepository meetingRoomRepository, UserRepository userRepository, JsonPlaceholderClient jsonPlaceholderClient) {
+        this.meetingRoomRepository = meetingRoomRepository;
+        this.userRepository = userRepository;
+        this.jsonPlaceholderClient = jsonPlaceholderClient;
+    }
 
     public MeetingRoomEntity add(MeetingRoomPostRequest meetingRoomPostRequests) {
         // get user from db
         Optional<UserEntity> userEntityOptional = userRepository.findById(meetingRoomPostRequests.getUserId());
-        if(userEntityOptional.isEmpty()){
+        if (userEntityOptional.isEmpty()) {
             throw new ApplicationException("Only admins can add a meeting room");
         }
 
         UserEntity user = userEntityOptional.get();
-        if(!user.getType().equals("admin")){
+        if (!user.getType().equals("admin")) {
             throw new ApplicationException("Only admins can add a meeting room");
         }
 
@@ -47,45 +52,44 @@ public class MeetingRoomService {
         meetingRooms.setCapacity(meetingRoomPostRequests.getCapacity());
         meetingRooms.setIsOccupied(meetingRoomPostRequests.getIsOccupied());
 
-        return meetingRoomRepository.save(meetingRooms);
+        MeetingRoomEntity savedMeetingRoom = meetingRoomRepository.save(meetingRooms);
+
+        // Create a corresponding post in JSONPlaceholder
+        String postJson = "{\"title\":\"" + savedMeetingRoom.getName() + "\", \"body\":\"Capacity: " + savedMeetingRoom.getCapacity() + "\", \"userId\":" + meetingRoomPostRequests.getUserId() + "}";
+        jsonPlaceholderClient.createPost(postJson);
+
+        return savedMeetingRoom;
     }
 
     public List<MeetingRoomDetail> fetchAll() {
         List<MeetingRoomEntity> allMeetingRooms = meetingRoomRepository.findAll();
 
-        return allMeetingRooms.stream().
-                map(MeetingRoomEntity -> new MeetingRoomDetail(MeetingRoomEntity.getName(),
-                        MeetingRoomEntity.getCapacity(),
-                        MeetingRoomEntity.getIsOccupied()))
+        return allMeetingRooms.stream()
+                .map(meetingRoomEntity -> new MeetingRoomDetail(meetingRoomEntity.getName(),
+                        meetingRoomEntity.getCapacity(),
+                        meetingRoomEntity.getIsOccupied()))
                 .collect(Collectors.toList());
     }
 
     public List<MeetingRoomDetail> subset(String orderBy, String direction, int page) {
         Pageable pageable = PageRequest.of(page, 3, Sort.by(Sort.Direction.valueOf(direction.toUpperCase()), orderBy));
 
-        return meetingRoomRepository.findAll(pageable).stream().
-                map(MeetingRoomEntity -> new MeetingRoomDetail(MeetingRoomEntity.getName(),
-                        MeetingRoomEntity.getCapacity(),
-                        MeetingRoomEntity.getIsOccupied()))
+        return meetingRoomRepository.findAll(pageable).stream()
+                .map(meetingRoomEntity -> new MeetingRoomDetail(meetingRoomEntity.getName(),
+                        meetingRoomEntity.getCapacity(),
+                        meetingRoomEntity.getIsOccupied()))
                 .collect(Collectors.toList());
     }
 
     public MeetingRoomDetail fetch(Long id) {
         Optional<MeetingRoomEntity> roomsOptional = meetingRoomRepository.findById(id);
-        MeetingRoomEntity room;
+        MeetingRoomEntity room = roomsOptional.orElse(null);
 
-        if(roomsOptional.isPresent()){
-            room = roomsOptional.get();
-        }
-        else{
-            room = null;
+        if (room == null) {
+            throw new ApplicationException("Meeting room not found");
         }
 
-        MeetingRoomDetail roomsDetail = new MeetingRoomDetail();
-        roomsDetail.setName(room.getName());
-        roomsDetail.setCapacity(room.getCapacity());
-        roomsDetail.setIsOccupied(room.getIsOccupied());
-        return roomsDetail;
+        return new MeetingRoomDetail(room.getName(), room.getCapacity(), room.getIsOccupied());
     }
 
     public MeetingRoomEntity update(Long roomId, MeetingRoomUpdateRequest meetingRoomUpdateRequest) {
@@ -111,22 +115,32 @@ public class MeetingRoomService {
         meetingRoom.setUpdatedBy(user.getType());
         meetingRoom.setUpdatedAt(LocalDateTime.now());
 
-        return meetingRoomRepository.save(meetingRoom);
+        MeetingRoomEntity updatedMeetingRoom = meetingRoomRepository.save(meetingRoom);
+
+        // Update corresponding post in JSONPlaceholder
+        String postJson = "{\"title\":\"" + updatedMeetingRoom.getName() + "\", \"body\":\"Capacity: " + updatedMeetingRoom.getCapacity() + "\", \"userId\":" + meetingRoomUpdateRequest.getUserId() + "}";
+        jsonPlaceholderClient.updatePost(roomId, postJson);
+
+        return updatedMeetingRoom;
     }
 
     public void delete(Long roomId, Long userId) {
         Optional<UserEntity> userEntityOptional = userRepository.findById(userId);
-        if(userEntityOptional.isEmpty()){
+        if (userEntityOptional.isEmpty()) {
             throw new ApplicationException("User not found");
         }
 
-        UserEntity user= userEntityOptional.get();
-        if(!user.getType().equals("admin")){
-            throw new ApplicationException("Only admins can update a meeting room");
+        UserEntity user = userEntityOptional.get();
+        if (!user.getType().equals("admin")) {
+            throw new ApplicationException("Only admins can delete a meeting room");
         }
 
-        MeetingRoomEntity meetingRoom = meetingRoomRepository.findById(roomId).orElseThrow(() -> new ApplicationException("Meeting room not found"));
+        MeetingRoomEntity meetingRoom = meetingRoomRepository.findById(roomId)
+                .orElseThrow(() -> new ApplicationException("Meeting room not found"));
 
         meetingRoomRepository.delete(meetingRoom);
+
+        // Delete the corresponding post in JSONPlaceholder
+        jsonPlaceholderClient.deletePost(roomId);
     }
 }
